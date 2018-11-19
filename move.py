@@ -49,10 +49,11 @@ client.on_message = on_message
 client.connect("brisk-bear.rmq.cloudamqp.com", 1883, 60)
 client.loop_start()
 
-retries = 10
+retries = 20
 return_code = 0
 while True:
   if received_ack:
+    print("move to", opts.x, opts.y, opts.z, "successful")
     break
   retries -= 1
   if retries == 0:
