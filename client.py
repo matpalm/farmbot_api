@@ -6,20 +6,18 @@ from uuid import uuid4
 def coord(x, y, z):
   return {"kind": "coordinate", "args": {"x": x, "y": y, "z": z}}
 
-def json_move_request(x, y, z):
-  # return uuid for request as well as json request
+def move_request(x, y, z):
+  return {"kind": "rpc_request",
+          "args": {"label": str(uuid4())},
+          "body": [{"kind": "move_absolute",
+                    "args": {"location": coord(x, y, z),
+                             "offset": coord(0, 0, 0),
+                             "speed": 50}}]}
 
-  # TODO: decide speed 50 or 100; seeing more reliable moves, for short
-  # distance, with speed 50... (???)
-  uuid = str(uuid4())
-  request = json.dumps({
-    "kind": "rpc_request",
-    "args": {"label": uuid},
-    "body": [{"kind": "move_absolute",
-              "args": {"location": coord(x, y, z),
-                       "offset": coord(0, 0, 0),
-                       "speed": 50}}]})
-  return uuid, request
+def take_photo_request():
+  return {"kind": "rpc_request",
+          "args": {"label": str(uuid4())},
+          "body": [{"kind": "take_photo", "args": {}}]}
 
 class FarmbotClient(object):
 
@@ -39,16 +37,23 @@ class FarmbotClient(object):
 
   def move(self, x, y, z):
     print("> move")
-    self._wait_for_connection()
-    # issue request...
-    self.pending_uuid, json_request = json_move_request(x, y, z)
-    self.received_ack = False
-    self.client.publish("bot/" + self.device_id + "/from_clients", json_request)
-    # wait for ack
-    while not self.received_ack:
-#      print("waiting for ack for", self.pending_uuid)
-      time.sleep(0.1)
+    self._blocking_request(move_request(x, y, z))
     print("< move")
+
+  def take_photo(self):
+    # TODO: is this enough? it's issue a request for the photo, but is the actual capture async?
+    print("> take photo")
+    self._blocking_request(take_photo_request())
+    print("< take photo")
+
+  def _blocking_request(self, request):
+    self._wait_for_connection()
+    self.pending_uuid = request['args']['label']
+    self.received_ack = False
+    self.client.publish("bot/" + self.device_id + "/from_clients", json.dumps(request))
+    while not self.received_ack:
+      time.sleep(0.1)
+    self.pending_uuid = None
 
   def _wait_for_connection(self):
     # TODO: timeout.
@@ -66,7 +71,7 @@ class FarmbotClient(object):
   def _on_message(self, client, userdata, msg):
     print("> _on_message", msg.payload)
     resp = json.loads(msg.payload)
-    if resp['kind'] == 'rpc_ok':
+    if msg.topic.endswith("/from_device") and resp['kind'] == 'rpc_ok':
       print("received rpc_ok msg", resp['args'])
       if resp['args']['label'] == self.pending_uuid:
         print("MATCH for pending uuid")
