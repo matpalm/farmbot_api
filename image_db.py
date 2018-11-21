@@ -31,6 +31,11 @@ class ImageDB(object):
 #    c.execute("select name from sqlite_master where type='table' AND name='imgs';")
 #    return c.fetchone() is not None
 
+  def has_record_for_farmbot_id(self, farmbot_id):
+    c = self.conn.cursor()
+    c.execute("select farmbot_id from imgs where farmbot_id=?", (farmbot_id,))
+    return c.fetchone() is not None
+
   def insert(self, api_response, dts, filename):
     farmbot_id = api_response['id']
     capture_time = dts.strftime("%Y-%m-%d %H:%M:%S")
