@@ -19,6 +19,11 @@ def take_photo_request():
           "args": {"label": ""},
           "body": [{"kind": "take_photo", "args": {}}]}
 
+def clip(x, min_v, max_v):
+  if x < min_v: return min_v
+  if x > max_v: return max_v
+  return x
+
 class FarmbotClient(object):
 
   def __init__(self, device_id, token):
@@ -36,10 +41,8 @@ class FarmbotClient(object):
     self.client.loop_stop()
 
   def move(self, x, y, z):
-    assert x >= 0
-    assert x <= 2400
-    assert y >= 0
-    assert y <= 1200
+    x = clip(x, 0, 2400)
+    y = clip(y, 0, 1200)
     start = time.time()
     print("> move", x, y, z)
     status_ok = self._blocking_request(move_request(x, y, z))
