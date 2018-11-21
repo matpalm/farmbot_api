@@ -1,0 +1,9 @@
+pip3 install paho-mqtt
+
+./sweep_bed.py
+
+./download_images.py
+
+
+see https://gist.github.com/RickCarlino/10db2df375d717e9efdd3c2d9d8932af
+for examples of rest api

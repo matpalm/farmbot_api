@@ -11,10 +11,6 @@ for x in range(100, 2500, 200):
     y_range = reversed(y_range)
   sweep_y_negative = not sweep_y_negative
   for y in y_range:
-    assert x >= 100
-    assert x <= 2400
-    assert y >= 0
-    assert y <= 1200
     pts.append((x, y))
 print(pts)
 
