@@ -36,9 +36,9 @@ class ImageDB(object):
     c.execute("select farmbot_id from imgs where farmbot_id=?", (farmbot_id,))
     return c.fetchone() is not None
 
-  def imgs_for_x_y(self, x, y):
+  def imgs_for_coords(self, x, y, z):
     c = self.conn.cursor()
-    c.execute("select id, filename from imgs where x=? and y=?", (x, y,))
+    c.execute("select id, filename from imgs where x=? and y=? and z=?", (x, y, z, ))
     return c.fetchall()
 
   def insert(self, api_response, dts, filename):
