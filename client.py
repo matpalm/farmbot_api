@@ -72,8 +72,6 @@ class FarmbotClient(object):
     while self.rpc_status is None:
       time.sleep(0.1)
       timeout_counter -= 1
-      if timeout_counter % 10 == 0:
-        print("waiting....", timeout_counter)
       if timeout_counter == 0:
         print("timeout...", self.pending_uuid)
         return self._blocking_request(request, retries_remaining-1)
