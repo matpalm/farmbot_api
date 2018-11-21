@@ -3,9 +3,23 @@
 import creds
 from client import FarmbotClient
 
+pts = []
+sweep_y_negative = False
+for x in range(100, 2500, 200):
+  y_range = range(0, 1200, 200)
+  if sweep_y_negative:
+    y_range = reversed(y_range)
+  sweep_y_negative = not sweep_y_negative
+  for y in y_range:
+    assert x >= 100
+    assert x <= 2400
+    assert y >= 0
+    assert y <= 1200
+    pts.append((x, y))
+print(pts)
+
 client = FarmbotClient(creds.device_id, creds.token)
-client.move(0, 0, 0)
-client.take_photo()
-client.move(100, 100, 0)
-client.take_photo()
+for x, y in pts:
+  client.move(x, y, 0)
+  client.take_photo()
 client.shutdown()
