@@ -26,11 +26,6 @@ class ImageDB(object):
         # assume table already exists? clumsy...
         pass
 
-#  def has_been_created(self):
-#    c = self.conn.cursor()
-#    c.execute("select name from sqlite_master where type='table' AND name='imgs';")
-#    return c.fetchone() is not None
-
   def has_record_for_farmbot_id(self, farmbot_id):
     c = self.conn.cursor()
     c.execute("select farmbot_id from imgs where farmbot_id=?", (farmbot_id,))
@@ -50,48 +45,11 @@ class ImageDB(object):
     x, y, z = map(int, [api_response['meta'][c] for c in ['x', 'y', 'z']])
     c = self.conn.cursor()
     insert_values = (farmbot_id, capture_time, x, y, z, json.dumps(api_response), filename)
-#    print("I", insert_values)
     c.execute("insert into imgs (farmbot_id, capture_time, x, y, z, api_response, filename) values (?,?,?,?,?,?,?)", insert_values)
     self.conn.commit()
 
-
-
-#  def _id_for_img(self, img):
-#    c = self.conn.cursor()
-#    c.execute("select id from imgs where filename=?", (img,))
-#    id = c.fetchone()
-#    if id is None:
-#      return None
-#    else:
-#      return id[0]
-
-#  def _create_row_for_img(self, img):
-#    c = self.conn.cursor()
-#    c.execute("insert into imgs (filename) values (?)", (img,))
-#    self.conn.commit()
-#    return self._id_for_img(img)
-
-#  def _delete_labels_for_img_id(self, img_id):
-#    c = self.conn.cursor()
-#    c.execute("delete from labels where img_id=?", (img_id,))
-#    self.conn.commit()
-
-#  def _add_rows_for_labels(self, img_id, labels, flip=False):
-#    c = self.conn.cursor()
-#    for x, y in labels:
-#      if flip:
-#        # TODO: DANGER WILL ROBERTSON! the existence of this, for the population
-#        #       of db from centroids_of_connected_components denotes some inconsistency
-#        #       somewhere... :/
-#        x, y = y, x
-#      c.execute("insert into labels (img_id, x, y) values (?, ?, ?)", (img_id, x, y,))
-#    self.conn.commit()
-
-
-#if __name__ == "__main__":
-#  import argparse
-#  parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-#  parser.add_argument('--label-db', type=str, default="label.db")
-#  opts = parser.parse_args()
-#  db = LabelDB(label_db_file=opts.label_db)
-#  print("\n".join(db.imgs()))
+  def x_y_counts(self, min_c=1):
+    c = self.conn.cursor()
+    c.execute("select x, y, count(*) as c from imgs group by x, y having c >= ?", (min_c,))
+    records = c.fetchall()
+    return sorted(records, key=lambda r: -r[2])  # return sorted by freq

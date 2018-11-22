@@ -7,6 +7,7 @@ import creds
 from image_db import ImageDB
 from dateutil.parser import parse
 from datetime import timezone
+import sys
 
 # note: download only returns 100 at a time!
 # note: we are currently ignoreing placeholders
@@ -24,14 +25,13 @@ while True:
     exit()
 
   for image_info in images:
-    print(image_info)
 
     if image_db.has_record_for_farmbot_id(image_info['id']):
-      print("IGNORE! dup", image_info)
+      print("IGNORE! dup", image_info['id'])
       continue
 
     if 'placehold.it' in image_info['attachment_url']:
-      print("IGNORE! placeholder", image_info)
+      print("IGNORE! placeholder", image_info['id'])
       continue
 
     # convert date time of capture from UTC To AEDT and extract
@@ -42,6 +42,7 @@ while True:
     if not os.path.exists(local_img_dir):
       os.makedirs(local_img_dir)
     local_img_name = "%s/%s.jpg" % (local_img_dir, dts.strftime("%H%M%S"))
+    print(">", local_img_name)
 
     # download image from google storage and save locally
     captured_img_name = image_info['meta']['name']
