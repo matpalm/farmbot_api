@@ -38,7 +38,10 @@ class ImageDB(object):
 
   def imgs_for_coords(self, x, y, z):
     c = self.conn.cursor()
-    c.execute("select id, filename from imgs where x=? and y=? and z=?", (x, y, z, ))
+    if z is None:
+      c.execute("select id, x, y, z, filename from imgs where x=? and y=? order by capture_time", (x, y, ))
+    else:
+      c.execute("select id, x, y, z, filename from imgs where x=? and y=? and z=? order by capture_time", (x, y, z, ))
     return c.fetchall()
 
   def insert(self, api_response, dts, filename):
