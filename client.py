@@ -76,12 +76,12 @@ class FarmbotClient(object):
       logging.error("< blocking request [%s] OUT OF RETRIES", request)
       return False
 
-    logging.debug("> blocking request [%s] retries=%d", request, retries_remaining)
     self._wait_for_connection()
 
     # assign a new uuid for this attempt
     self.pending_uuid = str(uuid4())
     request['args']['label'] = self.pending_uuid
+    logging.debug("> blocking request [%s] retries=%d", request, retries_remaining)
 
     # send request off
     self.rpc_status = None
@@ -131,6 +131,7 @@ class FarmbotClient(object):
 
   def _on_message(self, client, userdata, msg):
     resp = json.loads(msg.payload)
-    logging.debug("> _on_message [%s] [%s]", msg.topic, resp)
+    if resp['args']['label'] != 'ping':
+      logging.debug("> _on_message [%s] [%s]", msg.topic, resp)
     if msg.topic.endswith("/from_device") and resp['args']['label'] == self.pending_uuid:
       self.rpc_status = resp['kind']
