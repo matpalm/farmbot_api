@@ -1,13 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
+from datetime import timezone
+from dateutil.parser import parse
+from image_db import ImageDB
+import creds
+import json
 import os
 import requests
-import json
-import creds
-from image_db import ImageDB
-from dateutil.parser import parse
-from datetime import timezone
 import sys
+import time
 
 # note: download only returns 100 at a time!
 # note: we are currently ignoreing placeholders
@@ -24,10 +25,14 @@ while True:
   if len(images) == 0:
     exit()
 
+  at_least_one_dup = False
   for image_info in images:
 
     if image_db.has_record_for_farmbot_id(image_info['id']):
       print("IGNORE! dup", image_info['id'])
+      requests.delete("https://my.farmbot.io/api/images/%d" % image_info['id'],
+                      headers=REQUEST_HEADERS)
+      at_least_one_dup = True
       continue
 
     if 'placehold.it' in image_info['attachment_url']:
@@ -54,5 +59,9 @@ while True:
     image_db.insert(image_info, dts, local_img_name)
 
     # post delete from cloud storage
-    response = requests.delete("https://my.farmbot.io/api/images/%d" % image_info['id'],
-                               headers=REQUEST_HEADERS)
+    requests.delete("https://my.farmbot.io/api/images/%d" % image_info['id'],
+                    headers=REQUEST_HEADERS)
+
+  if at_least_one_dup:
+    print("only at least one dup; give DELETEs a chance to work")
+    time.sleep(2)
