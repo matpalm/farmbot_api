@@ -27,7 +27,7 @@ class AnnotateImageWithDetections(object):
     self.c_idx += 1
     return c
 
-  def annotate_img(self, img_full_filename):
+  def annotate_img(self, img_full_filename, min_score=0, show_all=False):
     img = Image.open(img_full_filename)
     W, H = img.size
 
@@ -53,19 +53,26 @@ class AnnotateImageWithDetections(object):
     print("entities", entities)
     print("scores", scores)
 
-    # do non max suppression to collect key bounding boxes along with
-    # their corresponding suppressions
-    pick_to_suppressions = u.non_max_suppression(bounding_boxes, scores=scores, overlap_thresh=0.6)
-    print("pick_to_suppressions", pick_to_suppressions)
+    if show_all:
+      picks = range(len(bounding_boxes))
+    else:
+      # do non max suppression to collect key bounding boxes along with
+      # their corresponding suppressions
+      pick_to_suppressions = u.non_max_suppression(bounding_boxes, scores=scores, overlap_thresh=0.6)
+      print("pick_to_suppressions", pick_to_suppressions)
+      picks = pick_to_suppressions.keys()
 
     # draw detections on image and show
     canvas = ImageDraw.Draw(img, 'RGBA')
     font = ImageFont.truetype('Pillow/Tests/fonts/FreeMono.ttf', 20)
-    for i, pick in enumerate(pick_to_suppressions.keys()):
+    for i, pick in enumerate(picks):
+      score = scores[pick]
+      if score < min_score:
+        continue
+
       bounding_box = bounding_boxes[pick]
       entity = entities[pick]
-      score = scores[pick]
-      suppressions = pick_to_suppressions[pick]
+
 
       x0, y0, x1, y1 = bounding_box
       area = (x1-x0)*(y1-y0)
@@ -74,7 +81,12 @@ class AnnotateImageWithDetections(object):
       rectangle(canvas, xy=(x0, y0, x1, y1),
                 outline=(*self.entity_to_colour(entity), alpha))
 
-      debug_text = "e:%s: s:%0.3f a:%0.1f  p:%d sup:%s" % (entity, score, area, pick, pick_to_suppressions[pick])
+      if show_all:
+        debug_text = "e:%s: s:%0.3f a:%0.1f  p:%d" % (entity, score, area, pick)
+      else:
+        suppressions = pick_to_suppressions[pick]
+        debug_text = "e:%s: s:%0.3f a:%0.1f  p:%d sup:%s" % (entity, score, area, pick, suppressions)
+
       canvas.text(xy=(0, 25*i), text=debug_text, font=font, fill='black')
       canvas.text(xy=(1, 25*i+1), text=debug_text, font=font, fill=self.entity_to_colour(entity))
       print(debug_text)
@@ -86,10 +98,15 @@ if __name__ == "__main__":
   import argparse, sys
   parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument('--entity-blacklist', type=str, default='', help='comma seperated list of entities to ignore')
+  parser.add_argument('--min-score', type=float, default=0, help='minimum detection score to show')
+  parser.add_argument('--show-all', action='store_true', help='show all detections (as opposed to nonmax suppressed)')
   parser.add_argument('filename', nargs=1, help="file to show detections for")
   opts = parser.parse_args()
   print("opts %s" % opts, file=sys.stderr)
 
   annotator = AnnotateImageWithDetections(entities_blacklist=opts.entity_blacklist.split(","))
-  img = annotator.annotate_img(opts.filename[0])
+
+  img = annotator.annotate_img(opts.filename[0],
+                               min_score=opts.min_score,
+                               show_all=opts.show_all)
   img.show()
