@@ -2,6 +2,8 @@
 
 a simple farmbot api focussed on bulk image capture and annotation
 
+![images_eg.gif](images_eg.gif)
+
 ## setup
 
 comms with the farmbot is via [mqtt](http://mqtt.org/)
