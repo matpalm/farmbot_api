@@ -21,6 +21,15 @@ this script writes a `creds.py` file. do _NOT_ check creds.py in!!
 
 ## use cases
 
+a common use case is the combo of sweeping across the bed capturing images,
+downloading them all and then run detections
+
+```
+./sweep_bed.py
+./download_images.py
+./calculate_detections.py
+```
+
 ### simple move
 
 demo use case of move to a position and take a photo
@@ -57,10 +66,27 @@ all images and then delete them from cloud storage.
 ./download_images.py
 ```
 
-### annotate images
+### show all images for a specific coord
 
-WIP
+show a collage with all images for a specific (x, y, z). assumes z=0 if only two args provided.
 
+```
+./show_images_for.py 200 200
+```
+
+### annotate images without detections
+
+run faster rcnn on all images that haven't been run yet
+
+```
+./calculate_detections.py
+```
+
+### show annotations for a specific image
+
+```
+./show_detections.py imgs/20181122/140032.jpg
+```
 
 ### tail all logs from farmbot
 
