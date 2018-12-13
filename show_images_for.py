@@ -4,8 +4,10 @@ from image_db import ImageDB
 from PIL import Image, ImageDraw
 import math
 import sys
+import show_detections
 
 image_db = ImageDB()
+detections_annotator = show_detections.AnnotateImageWithDetections()
 
 xyz = list(map(int, sys.argv[1:]))
 if len(xyz) == 2:  # OMG, so clumsy :/
@@ -22,7 +24,7 @@ if len(imgs) == 0:
 HW = math.ceil(math.sqrt(len(imgs)))
 canvas = Image.new('RGB', (645*HW, 485*HW), (50, 50, 50))
 for i, (img_id, x, y, z, img) in enumerate(imgs):
-  pil_img = Image.open(img)
+  pil_img = detections_annotator.annotate_img(img)
   draw = ImageDraw.Draw(pil_img)
   draw.text((0, 0), "%s (%d, %d, %d)" % (img, x, y, z))
   paste_x_y = (645*(i%HW), 485*(i//HW))
