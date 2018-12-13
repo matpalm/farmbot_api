@@ -13,6 +13,7 @@ parser.add_argument('--min-x', type=int, default=0, help="min x value")
 parser.add_argument('--max-x', type=int, default=2500, help="max x value")
 parser.add_argument('--min-y', type=int, default=0, help="min y value")
 parser.add_argument('--max-y', type=int, default=1300, help="max y value")
+parser.add_argument('--dry-run', action='store_true', help="just show x,y pairs without doing anything")
 opts = parser.parse_args()
 print("opts %s" % opts)
 
@@ -26,6 +27,9 @@ for x in range(opts.min_x, opts.max_x, opts.delta):
   for y in y_range:
     pts.append((x+opts.offset, y+opts.offset))
 print(len(pts), pts)
+
+if opts.dry_run:
+  exit()
 
 client = FarmbotClient(creds.device_id, creds.token)
 for x, y in pts:

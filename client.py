@@ -71,7 +71,6 @@ class FarmbotClient(object):
     logging.info("TAKE_PHOTO [%s]", status_ok)
 
   def _blocking_request(self, request, retries_remaining=3):
-
     if retries_remaining==0:
       logging.error("< blocking request [%s] OUT OF RETRIES", request)
       return False
@@ -130,7 +129,7 @@ class FarmbotClient(object):
     logging.debug("< _on_connect")
 
   def _on_message(self, client, userdata, msg):
-    resp = json.loads(msg.payload)
+    resp = json.loads(msg.payload.decode())
     if resp['args']['label'] != 'ping':
       logging.debug("> _on_message [%s] [%s]", msg.topic, resp)
     if msg.topic.endswith("/from_device") and resp['args']['label'] == self.pending_uuid:
