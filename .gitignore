@@ -1,8 +1,6 @@
-image.db
 farmbot_client.log
 imgs
 *~
-image.db.bu
 __pycache__/
 *py~
 creds.py

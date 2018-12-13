@@ -5,7 +5,7 @@ import json
 
 class ImageDB(object):
 
-  def __init__(self, image_db_file='image.db', check_same_thread=True):
+  def __init__(self, image_db_file='imgs/image.db', check_same_thread=True):
     self.conn = sqlite3.connect(image_db_file, check_same_thread=check_same_thread)
 
   def create_if_required(self):
