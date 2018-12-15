@@ -29,11 +29,10 @@ class AnnotateImageWithDetections(object):
 
   def annotate_img(self, img_full_filename, min_score=0, show_all=False):
     img = Image.open(img_full_filename)
-    W, H = img.size
 
     detections = self.image_db.detections_for_img(img_full_filename)
     if len(detections) == 0:
-      print("NOTE! no detections for %s" % full_image_filename)
+      print("NOTE! no detections for %s" % img_full_filename)
       return img
 
     # collect all detections
@@ -43,7 +42,7 @@ class AnnotateImageWithDetections(object):
     for entity, score, x0, y0, x1, y1 in detections:
       if entity in self.entities_blacklist:
         continue
-      bounding_boxes.append([x0*W,y0*H,x1*W,y1*H])
+      bounding_boxes.append([x0, y0, x1, y1])
       entities.append(entity)
       scores.append(score)
     bounding_boxes = np.stack(bounding_boxes)
@@ -72,7 +71,6 @@ class AnnotateImageWithDetections(object):
 
       bounding_box = bounding_boxes[pick]
       entity = entities[pick]
-
 
       x0, y0, x1, y1 = bounding_box
       area = (x1-x0)*(y1-y0)

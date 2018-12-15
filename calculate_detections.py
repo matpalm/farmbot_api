@@ -7,6 +7,7 @@
 import tensorflow as tf
 import tensorflow_hub as hub
 import sys
+from PIL import Image
 
 class Detector(object):
 
@@ -22,6 +23,8 @@ class Detector(object):
     self.sess.run([tf.global_variables_initializer(), tf.tables_initializer()])
 
   def detections(self, img_filename):
+    # determine image size
+    W, H = Image.open(img_filename).size
     # run img through network
     img_bytes = open(img_filename, 'rb').read()
     detections = self.sess.run(self.detect_fn,
@@ -36,7 +39,8 @@ class Detector(object):
       if score > self.min_score:
         entity = entity.decode()
         score = float(score)
-        y0, x0, y1, x1 = map(float, list(bb))
+        y0, x0, y1, x1 = map(float, list(bb))                # x, y in range (0.0, 1.0)
+        x0, y0, x1, y1 = map(int, (x0*W, y0*H, x1*W, y1*H))  # mapped to pixel space (ints)
         detections.append((entity, score, x0, y0, x1, y1))
     return detections
 
