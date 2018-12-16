@@ -77,7 +77,7 @@ show a collage with all images for a specific (x, y, z). assumes z=0 if only two
 ### annotate images without detections
 
 run faster rcnn on all images that haven't been run yet.
-we calculate detections for image as is as well as rotated by 90, 180 and 270 degrees.
+we calculate detections for the image as captured as well as rotated by 90, 180 and 270 degrees.
 
 ```
 ./calculate_detections.py
