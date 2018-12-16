@@ -39,12 +39,12 @@ class AnnotateImageWithDetections(object):
     bounding_boxes = []
     entities = []
     scores = []
-    for entity, score, x0, y0, x1, y1 in detections:
-      if entity in self.entities_blacklist:
+    for d in detections:
+      if d.entity in self.entities_blacklist:
         continue
-      bounding_boxes.append([x0, y0, x1, y1])
-      entities.append(entity)
-      scores.append(score)
+      bounding_boxes.append([d.x0, d.y0, d.x1, d.y1])
+      entities.append(d.entity)
+      scores.append(d.score)
     bounding_boxes = np.stack(bounding_boxes)
     entities = np.array(entities)
     scores = np.array(scores)

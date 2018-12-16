@@ -1,5 +1,6 @@
 # image db helper
 
+from calculate_detections import Detection
 import sqlite3
 import json
 
@@ -85,15 +86,16 @@ class ImageDB(object):
   def insert_detections(self, img_id, detections):
     c = self.conn.cursor()
     if len(detections) > 0:
-      values = [(img_id, *d) for d in detections]
+      values = [(img_id, d.entity, d.score, d.x0, d.y0, d.x1, d.y1) for d in detections]
       c.executemany("insert into detections (img_id, entity, score, x0, y0, x1, y1) values (?,?,?,?,?,?,?)", values)
     c.execute("update imgs set detections_run=1 where id=?", (img_id,))
     self.conn.commit()
 
   def detections_for_img(self, filename):
     c = self.conn.cursor()
+
     c.execute("""select d.entity, d.score, d.x0, d.y0, d.x1, d.y1
                  from imgs i join detections d on i.id=d.img_id
                  where i.filename=?
                  order by score desc""", (filename,))
-    return c.fetchall()
+    return list(map(Detection._make, c.fetchall()))

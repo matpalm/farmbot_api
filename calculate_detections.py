@@ -8,6 +8,9 @@ import tensorflow as tf
 import tensorflow_hub as hub
 import sys
 from PIL import Image
+from collections import namedtuple
+
+Detection = namedtuple('Detection', ['entity', 'score', 'x0', 'y0', 'x1', 'y1'])
 
 class Detector(object):
 
@@ -41,7 +44,7 @@ class Detector(object):
         score = float(score)
         y0, x0, y1, x1 = map(float, list(bb))                # x, y in range (0.0, 1.0)
         x0, y0, x1, y1 = map(int, (x0*W, y0*H, x1*W, y1*H))  # mapped to pixel space (ints)
-        detections.append((entity, score, x0, y0, x1, y1))
+        detections.append(Detection(entity, score, x0, y0, x1, y1))
     return detections
 
 
