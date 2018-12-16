@@ -27,7 +27,7 @@ class AnnotateImageWithDetections(object):
     self.c_idx += 1
     return c
 
-  def annotate_img(self, img_full_filename, min_score=0, show_all=False):
+  def annotate_img(self, img_full_filename, min_score=0, theta=None, show_all=False):
     img = Image.open(img_full_filename)
 
     detections = self.image_db.detections_for_img(img_full_filename)
@@ -41,6 +41,8 @@ class AnnotateImageWithDetections(object):
     scores = []
     for d in detections:
       if d.entity in self.entities_blacklist:
+        continue
+      if theta is not None and d.theta != theta:
         continue
       bounding_boxes.append([d.x0, d.y0, d.x1, d.y1])
       entities.append(d.entity)
@@ -98,6 +100,8 @@ if __name__ == "__main__":
   parser.add_argument('--entity-blacklist', type=str, default='', help='comma seperated list of entities to ignore')
   parser.add_argument('--min-score', type=float, default=0, help='minimum detection score to show')
   parser.add_argument('--show-all', action='store_true', help='show all detections (as opposed to nonmax suppressed)')
+  parser.add_argument('--theta', type=int, default=None,
+                      help='if set, show detections only for a specific rotation, otherwise show all')
   parser.add_argument('filename', nargs=1, help="file to show detections for")
   opts = parser.parse_args()
   print("opts %s" % opts, file=sys.stderr)
@@ -106,5 +110,6 @@ if __name__ == "__main__":
 
   img = annotator.annotate_img(opts.filename[0],
                                min_score=opts.min_score,
+                               theta=opts.theta,
                                show_all=opts.show_all)
   img.show()
